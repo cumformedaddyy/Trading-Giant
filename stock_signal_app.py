@@ -11,6 +11,10 @@ import plotly.graph_objects as go
 from nltk.sentiment import SentimentIntensityAnalyzer
 from sklearn.ensemble import RandomForestClassifier
 import joblib
+import nltk
+
+# Ensure Vader Lexicon is available
+nltk.download('vader_lexicon')
 
 # Streamlit App Setup
 st.title("Stock Buy/Sell Signal App with Live News, AI Predictions & Market Trends")
