@@ -1,0 +1,8 @@
+pandas
+numpy
+yfinance
+requests
+textblob
+beautifulsoup4
+streamlit
+yahooquery
