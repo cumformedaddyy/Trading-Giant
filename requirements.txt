@@ -6,3 +6,7 @@ textblob
 beautifulsoup4
 streamlit
 yahooquery
+nltk
+plotly
+scikit-learn
+joblib
