@@ -9,8 +9,8 @@ import streamlit as st
 import yahooquery as yq
 
 # Streamlit App Setup
-st.title("Stock Buy/Sell Signal App")
-st.write("Enter a stock symbol to get a buy or sell signal based on technical indicators and news sentiment.")
+st.title("Stock Buy/Sell Signal App with Live News & Market Trends")
+st.write("Enter a stock symbol to get a buy or sell signal based on technical indicators, news sentiment, and market trends.")
 
 # User Input for Stock Symbol
 stock_symbol = st.text_input("Enter Stock Symbol:", "AAPL")
@@ -22,6 +22,17 @@ def get_valid_ticker(symbol):
         return symbol
     else:
         return None
+
+# Function to fetch live financial news
+def get_live_news():
+    url = "https://finance.yahoo.com/news"
+    response = requests.get(url)
+    if response.status_code != 200:
+        return []
+    
+    soup = BeautifulSoup(response.text, 'html.parser')
+    headlines = [h.text for h in soup.find_all('h3')[:10]]  # Get top 10 headlines
+    return headlines
 
 if stock_symbol:
     valid_ticker = get_valid_ticker(stock_symbol)
@@ -55,30 +66,11 @@ if stock_symbol:
             avg_sentiment = np.mean(sentiment_scores) if sentiment_scores else 0
             return avg_sentiment
 
-        # Function to get news sentiment from Seeking Alpha
-        def get_seeking_alpha_sentiment(stock):
-            url = f'https://seekingalpha.com/symbol/{stock}'
-            response = requests.get(url, headers={'User-Agent': 'Mozilla/5.0'})
-            if response.status_code != 200:
-                return 0  # Return neutral sentiment if request fails
-            
-            soup = BeautifulSoup(response.text, 'html.parser')
-            headlines = [h.text for h in soup.find_all('h3')]
-            
-            sentiment_scores = []
-            for headline in headlines:
-                analysis = TextBlob(headline)
-                sentiment_scores.append(analysis.sentiment.polarity)
-            
-            avg_sentiment = np.mean(sentiment_scores) if sentiment_scores else 0
-            return avg_sentiment
-
-        # Fetch news sentiment from both sources
-        google_news_sentiment = get_news_sentiment(valid_ticker)
-        seeking_alpha_sentiment = get_seeking_alpha_sentiment(valid_ticker)
+        # Fetch news sentiment
+        news_sentiment = get_news_sentiment(valid_ticker)
         
-        # Average both sentiment scores
-        news_sentiment = (google_news_sentiment + seeking_alpha_sentiment) / 2
+        # Fetch live financial news
+        live_news = get_live_news()
 
         # Define buy/sell logic
         def generate_signal(data, news_sentiment):
@@ -100,5 +92,11 @@ if stock_symbol:
         # Display results in Streamlit
         st.write("Stock Buy/Sell Signals:")
         st.dataframe(data[['Close', 'SMA_50', 'SMA_200', 'RSI', 'Signal']].dropna())
+        
+        # Display Live Financial News
+        st.write("### Live Market News")
+        for news in live_news:
+            st.write(f"- {news}")
     else:
         st.write("Invalid stock symbol. Please enter a valid ticker.")
+
